@@ -24,6 +24,13 @@ public class ClienteGatewayImpl implements ClienteGateway {
     }
 
     @Override
+    public Cliente atualizar(Cliente cliente) {
+        var entity = clienteMapper.toEntity(cliente);
+        var atualizado = clienteRepository.atualizar(entity);
+        return clienteMapper.toDomain(atualizado);
+    }
+
+    @Override
     public Optional<Cliente> buscarPorCpf(String cpf) {
         return clienteRepository.buscarPorCpf(cpf)
                 .map(clienteMapper::toDomain);

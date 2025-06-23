@@ -12,6 +12,8 @@ public interface ClienteGateway {
 
     Cliente salvar(Cliente cliente);
 
+    Cliente atualizar(Cliente cliente);
+
     void deletar(Cliente cliente);
 
     List<Cliente> listarTodos();

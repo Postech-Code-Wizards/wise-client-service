@@ -1,6 +1,8 @@
 package br.com.wise.controller;
 
 
+import br.com.wise.controller.dto.request.ClienteRequest;
+import br.com.wise.controller.mapper.ClienteMapper;
 import br.com.wise.domain.model.Cliente;
 import br.com.wise.usecase.*;
 import jakarta.inject.Inject;
@@ -10,6 +12,8 @@ import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.List;
+
+import static br.com.wise.controller.mapper.ClienteMapper.toResponse;
 
 @Path("/clientes")
 @Produces(MediaType.APPLICATION_JSON)
@@ -27,6 +31,9 @@ public class ClienteController {
 
     @Inject
     ListarClientesUseCase listarClientesUseCase;
+
+    @Inject
+    AtualizarClienteUseCase atualizarClienteUseCase;
 
     @Inject
     DeletarClienteUseCase deletarClienteUseCase;
@@ -72,4 +79,14 @@ public class ClienteController {
                 })
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
+
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response atualizar(@PathParam("id") Long id, ClienteRequest request) {
+        Cliente clienteAtualizado = atualizarClienteUseCase.executar(id, request);
+        return Response.ok(toResponse(clienteAtualizado)).build();
+    }
+
 }

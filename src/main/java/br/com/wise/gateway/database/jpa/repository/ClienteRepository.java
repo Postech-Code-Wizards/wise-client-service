@@ -25,6 +25,11 @@ public class ClienteRepository implements PanacheRepository<ClienteEntity> {
         return cliente;
     }
 
+    @Transactional
+    public ClienteEntity atualizar(ClienteEntity cliente) {
+        return getEntityManager().merge(cliente);
+    }
+
     public Optional<ClienteEntity> buscarPorId(Long id) {
         return findByIdOptional(id);
     }

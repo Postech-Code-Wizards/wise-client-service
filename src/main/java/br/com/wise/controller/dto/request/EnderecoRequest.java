@@ -1,12 +1,12 @@
 package br.com.wise.controller.dto.request;
 
-import lombok.Data;
+import lombok.Builder;
 
-@Data
-public class EnderecoRequest {
-    private String rua;
-    private String numero;
-    private String cep;
-    private String cidade;
-    private String uf;
-}
+@Builder
+public record EnderecoRequest(
+        String rua,
+        String numero,
+        String cep,
+        String cidade,
+        String uf
+) {}

@@ -1,13 +1,13 @@
 package br.com.wise.controller.dto.request;
 
-import lombok.Data;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
-@Data
-public class ClienteRequest {
-    private String nome;
-    private String cpf;
-    private LocalDate dataNascimento;
-    private EnderecoRequest endereco;
-}
+@Builder
+public record ClienteRequest(
+        String nome,
+        String cpf,
+        LocalDate dataNascimento,
+        EnderecoRequest endereco
+) {}

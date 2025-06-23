@@ -1,6 +1,7 @@
 package br.com.wise.controller.mapper;
 
 import br.com.wise.controller.dto.request.EnderecoRequest;
+import br.com.wise.controller.dto.response.ClienteResponse;
 import br.com.wise.controller.dto.response.EnderecoResponse;
 import br.com.wise.domain.model.Cliente;
 import br.com.wise.domain.model.Endereco;
@@ -11,13 +12,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class ClienteMapper {
 
-    private static Endereco toEnderecoDomain(EnderecoRequest request) {
+    public static Endereco toEnderecoDomain(EnderecoRequest request) {
         return Endereco.builder()
-                .rua(request.getRua())
-                .numero(request.getNumero())
-                .cep(request.getCep())
-                .cidade(request.getCidade())
-                .uf(request.getUf())
+                .rua(request.rua())
+                .numero(request.numero())
+                .cep(request.cep())
+                .cidade(request.cidade())
+                .uf(request.uf())
                 .build();
     }
 
@@ -52,6 +53,17 @@ public class ClienteMapper {
                 .cpf(entity.getCpf())
                 .dataNascimento(entity.getDataNascimento())
                 .endereco(toDomainEndereco(entity.getEndereco()))
+                .build();
+    }
+    public static ClienteResponse toResponse(Cliente cliente) {
+        if (cliente == null) return null;
+
+        return ClienteResponse.builder()
+                .id(cliente.getId())
+                .nome(cliente.getNome())
+                .cpf(cliente.getCpf())
+                .dataNascimento(cliente.getDataNascimento())
+                .endereco(toEnderecoResponse(cliente.getEndereco()))
                 .build();
     }
 
