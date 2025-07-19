@@ -1,16 +1,18 @@
-FROM maven:3.9.9-amazoncorretto-21-alpine AS build
-
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-COPY ./pom.xml ./
-COPY ./src ./src
+COPY pom.xml .
+COPY src ./src
 
 RUN mvn clean package -DskipTests
 
-FROM amazoncorretto:21.0.5-al2023-headless
-
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-COPY --from=build /app/target/*-SNAPSHOT.jar /app/app.jar
+COPY --from=build /app/target/quarkus-app/lib/ /app/lib/
+COPY --from=build /app/target/quarkus-app/quarkus/ /app/quarkus/
+COPY --from=build /app/target/quarkus-app/app/ /app/app/
+COPY --from=build /app/target/quarkus-app/quarkus-run.jar /app/
 
-ENTRYPOINT ["sh", "-c", "sleep 10 && java -jar /app/app.jar"]
+EXPOSE 8080
+CMD ["java", "-jar", "quarkus-run.jar"]
