@@ -1,15 +1,16 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+FROM maven:3.9.9-amazoncorretto-21-alpine AS build
+
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src
+COPY ./pom.xml ./
+COPY ./src ./src
 
-RUN mvn package -DskipTests
+RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17
+FROM amazoncorretto:21.0.5-al2023-headless
+
 WORKDIR /app
 
-COPY --from=build /app/target/*-runner.jar app.jar
+COPY --from=build /app/target/*-SNAPSHOT.jar /app/app.jar
 
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "sleep 10 && java -jar /app/app.jar"]
