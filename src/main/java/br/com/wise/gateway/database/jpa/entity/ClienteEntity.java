@@ -2,7 +2,6 @@ package br.com.wise.gateway.database.jpa.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,6 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ClienteEntity {
 
     @Id

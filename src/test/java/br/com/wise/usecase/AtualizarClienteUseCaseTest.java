@@ -1,7 +1,5 @@
 package br.com.wise.usecase;
 
-import br.com.wise.controller.dto.request.ClienteRequest;
-import br.com.wise.controller.dto.request.EnderecoRequest;
 import br.com.wise.domain.model.Cliente;
 import br.com.wise.domain.model.Endereco;
 import br.com.wise.gateway.ClienteGateway;
@@ -23,78 +21,90 @@ import static org.mockito.Mockito.*;
 class AtualizarClienteUseCaseTest {
 
     @Mock
-    private ClienteGateway clienteGateway;
+    ClienteGateway clienteGateway;
 
     @InjectMocks
-    private AtualizarClienteUseCase atualizarClienteUseCase;
+    AtualizarClienteUseCase atualizarClienteUseCase;
 
-    private Cliente clienteExistente;
-    private ClienteRequest request;
+    Cliente clienteExistente;
+    Cliente clienteParaAtualizacao;
 
     @BeforeEach
-    void setup() {
-        clienteExistente = Cliente.builder()
-                .id(1L)
-                .nome("Antigo Nome")
-                .cpf("12345678900")
-                .dataNascimento(LocalDate.of(1990, 1, 1))
-                .endereco(Endereco.builder()
-                        .rua("Rua Velha")
-                        .numero("100")
-                        .cep("13000-000")
-                        .cidade("Campinas")
-                        .uf("SP")
-                        .build())
-                .build();
+    void setUp() {
+        clienteExistente = new Cliente(
+                1L,
+                "Antigo Nome",
+                "12345678900",
+                LocalDate.of(1990, 1, 1),
+                new Endereco("Rua Velha", "100", "13000-000", "Campinas", "SP")
+        );
 
-        request = ClienteRequest.builder()
-                .nome("Novo Nome")
-                .cpf("12345678900")
-                .dataNascimento(LocalDate.of(1998, 10, 15))
-                .endereco(
-                        EnderecoRequest.builder()
-                                .rua("Rua Nova")
-                                .numero("200")
-                                .cep("13000-001")
-                                .cidade("Campinas")
-                                .uf("SP")
-                                .build()
-                )
-                .build();
+        clienteParaAtualizacao = new Cliente(
+                null,
+                "Novo Nome",
+                "12345678900",
+                LocalDate.of(1998, 10, 15),
+                new Endereco("Rua Nova", "200", "13000-001", "Campinas", "SP")
+        );
     }
 
     @Test
     void deveAtualizarClienteComDadosValidos() {
         when(clienteGateway.buscarPorId(1L)).thenReturn(Optional.of(clienteExistente));
         when(clienteGateway.buscarPorCpf("12345678900")).thenReturn(Optional.of(clienteExistente));
-        when(clienteGateway.atualizar(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Cliente atualizado = atualizarClienteUseCase.executar(1L, request);
+        Cliente clienteAtualizadoEsperado = new Cliente(
+                1L,
+                "Novo Nome",
+                "12345678900",
+                LocalDate.of(1998, 10, 15),
+                new Endereco("Rua Nova", "200", "13000-001", "Campinas", "SP")
+        );
 
-        assertThat(atualizado.getNome()).isEqualTo("Novo Nome");
-        assertThat(atualizado.getDataNascimento()).isEqualTo(LocalDate.of(1998, 10, 15));
-        assertThat(atualizado.getEndereco().getRua()).isEqualTo("Rua Nova");
+        when(clienteGateway.atualizar(any())).thenReturn(clienteAtualizadoEsperado);
+
+        Optional<Cliente> resultado = atualizarClienteUseCase.executar(1L, clienteParaAtualizacao);
+
+        assertThat(resultado)
+                .isPresent()
+                .get()
+                .satisfies(cliente -> {
+                    assertThat(cliente.id()).isEqualTo(1L);
+                    assertThat(cliente.nome()).isEqualTo("Novo Nome");
+                    assertThat(cliente.endereco().rua()).isEqualTo("Rua Nova");
+                });
 
         verify(clienteGateway).atualizar(any());
     }
 
     @Test
-    void deveLancarExcecao_QuandoClienteNaoExiste() {
+    void deveRetornarEmpty_QuandoClienteNaoExiste() {
         when(clienteGateway.buscarPorId(1L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> atualizarClienteUseCase.executar(1L, request));
+        Optional<Cliente> resultado = atualizarClienteUseCase.executar(1L, clienteParaAtualizacao);
 
-        verify(clienteGateway, never()).salvar(any());
+        assertThat(resultado).isEmpty();
+
+        verify(clienteGateway, never()).atualizar(any());
     }
 
     @Test
     void deveLancarExcecao_QuandoCpfDuplicado() {
-        Cliente outroCliente = Cliente.builder().id(2L).cpf("12345678900").build();
+        Cliente outroCliente = new Cliente(
+                2L,
+                "Outro Cliente",
+                "12345678900",
+                LocalDate.of(1990, 1, 1),
+                clienteExistente.endereco()
+        );
+
         when(clienteGateway.buscarPorId(1L)).thenReturn(Optional.of(clienteExistente));
         when(clienteGateway.buscarPorCpf("12345678900")).thenReturn(Optional.of(outroCliente));
 
-        assertThrows(IllegalArgumentException.class, () -> atualizarClienteUseCase.executar(1L, request));
+        assertThrows(IllegalArgumentException.class, () ->
+                atualizarClienteUseCase.executar(1L, clienteParaAtualizacao)
+        );
 
-        verify(clienteGateway, never()).salvar(any());
+        verify(clienteGateway, never()).atualizar(any());
     }
 }
