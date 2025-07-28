@@ -11,82 +11,90 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.List;
-
-import static br.com.wise.controller.mapper.ClienteMapper.toResponse;
 
 @Path("/clientes")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ClienteController {
 
-    @Inject
-    CriarClienteUseCase criarClienteUseCase;
+    private final CriarClienteUseCase criarClienteUseCase;
+    private final BuscarClientePorCpfUseCase buscarClientePorCpfUseCase;
+    private final BuscarClientePorIdUseCase buscarClientePorIdUseCase;
+    private final ListarClientesUseCase listarClientesUseCase;
+    private final AtualizarClienteUseCase atualizarClienteUseCase;
+    private final DeletarClienteUseCase deletarClienteUseCase;
+    private final ClienteMapper mapper;
 
     @Inject
-    BuscarClientePorCpfUseCase buscarClientePorCpfUseCase;
-
-    @Inject
-    BuscarClientePorIdUseCase buscarClientePorIdUseCase;
-
-    @Inject
-    ListarClientesUseCase listarClientesUseCase;
-
-    @Inject
-    AtualizarClienteUseCase atualizarClienteUseCase;
-
-    @Inject
-    DeletarClienteUseCase deletarClienteUseCase;
-
-    @POST
-    public Response criarCliente(Cliente cliente) {
-        var clienteCriado = criarClienteUseCase.executar(cliente);
-        return Response.created(URI.create("/clientes/" + clienteCriado.getId()))
-                .entity(clienteCriado)
-                .build();
+    public ClienteController(
+            CriarClienteUseCase criarClienteUseCase,
+            BuscarClientePorCpfUseCase buscarClientePorCpfUseCase,
+            BuscarClientePorIdUseCase buscarClientePorIdUseCase,
+            ListarClientesUseCase listarClientesUseCase,
+            AtualizarClienteUseCase atualizarClienteUseCase,
+            DeletarClienteUseCase deletarClienteUseCase,
+            ClienteMapper mapper
+    ) {
+        this.criarClienteUseCase = criarClienteUseCase;
+        this.buscarClientePorCpfUseCase = buscarClientePorCpfUseCase;
+        this.buscarClientePorIdUseCase = buscarClientePorIdUseCase;
+        this.listarClientesUseCase = listarClientesUseCase;
+        this.atualizarClienteUseCase = atualizarClienteUseCase;
+        this.deletarClienteUseCase = deletarClienteUseCase;
+        this.mapper = mapper;
     }
 
-    @GET
-    public List<Cliente> listarClientes() {
-        return listarClientesUseCase.executar();
+    @POST
+    public Response criarCliente(ClienteRequest request) {
+        var cliente = mapper.toDomain(request);
+        var clienteCriado = criarClienteUseCase.executar(cliente);
+        return Response.created(URI.create("/clientes/" + clienteCriado.id()))
+                .entity(ClienteMapper.toResponse(clienteCriado))
+                .build();
     }
 
     @GET
     @Path("/{id}")
     public Response buscarPorId(@PathParam("id") Long id) {
         return buscarClientePorIdUseCase.executar(id)
-                .map(Response::ok)
-                .orElse(Response.status(Response.Status.NOT_FOUND))
-                .build();
+                .map(cliente -> Response.ok(ClienteMapper.toResponse(cliente)).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @GET
     @Path("/cpf/{cpf}")
     public Response buscarPorCpf(@PathParam("cpf") String cpf) {
         return buscarClientePorCpfUseCase.executar(cpf)
-                .map(Response::ok)
-                .orElse(Response.status(Response.Status.NOT_FOUND))
-                .build();
+                .map(cliente -> Response.ok(ClienteMapper.toResponse(cliente)).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
+
+    @GET
+    public Response listarClientes() {
+        var clientes = listarClientesUseCase.executar();
+        var responses = clientes.stream()
+                .map(ClienteMapper::toResponse)
+                .toList();
+        return Response.ok(responses).build();
+    }
+
 
     @DELETE
     @Path("/{id}")
     public Response deletar(@PathParam("id") Long id) {
-        return buscarClientePorIdUseCase.executar(id)
-                .map(cliente -> {
-                    deletarClienteUseCase.executar(cliente);
-                    return Response.noContent().build();
-                })
-                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+        var deletado = deletarClienteUseCase.executar(id);
+        return deletado
+                ? Response.noContent().build()
+                : Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @PUT
     @Path("/{id}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response atualizar(@PathParam("id") Long id, ClienteRequest request) {
-        Cliente clienteAtualizado = atualizarClienteUseCase.executar(id, request);
-        return Response.ok(toResponse(clienteAtualizado)).build();
+        Cliente cliente = mapper.toDomain(request);
+        return atualizarClienteUseCase.executar(id, cliente)
+                .map(c -> Response.ok(ClienteMapper.toResponse(c)).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
 }

@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,33 +30,36 @@ class BuscarClientePorIdUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        cliente = Cliente.builder()
-                .id(1L)
-                .nome("Cliente Existente")
-                .cpf("11122233344")
-                .dataNascimento(LocalDate.of(1990, 1, 1))
-                .endereco(
-                        Endereco.builder()
-                                .rua("Rua da Esperança")
-                                .numero("100")
-                                .cep("13000-000")
-                                .cidade("Campinas")
-                                .uf("SP")
-                                .build()
-                )
-                .build();
+        Endereco endereco = new Endereco(
+                "Rua da Esperança",
+                "100",
+                "13000-000",
+                "Campinas",
+                "SP"
+        );
+
+        cliente = new Cliente(
+                1L,
+                "Cliente Existente",
+                "11122233344",
+                LocalDate.of(1990, 1, 1),
+                endereco
+        );
     }
 
     @Test
     void deveRetornarCliente_QuandoIdExiste() {
         when(clienteGateway.buscarPorId(1L)).thenReturn(Optional.of(cliente));
 
-        Optional<Cliente> resultado = buscarClientePorIdUseCase.executar(1L);
+        var resultado = buscarClientePorIdUseCase.executar(1L);
 
-        assertThat(resultado).isNotNull();
-        assertThat(resultado).isPresent();
-        assertThat(resultado.get().getId()).isEqualTo(1L);
-        assertThat(resultado.get().getNome()).isEqualTo("Cliente Existente");
+        assertThat(resultado)
+                .isPresent()
+                .get()
+                .satisfies(result -> {
+                    assertThat(result.id()).isEqualTo(1L);
+                    assertThat(result.nome()).isEqualTo("Cliente Existente");
+                });
 
         verify(clienteGateway).buscarPorId(1L);
     }

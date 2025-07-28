@@ -30,21 +30,21 @@ class BuscarClientePorCpfUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        cliente = Cliente.builder()
-                .id(1L)
-                .nome("Cliente CPF")
-                .cpf("99988877766")
-                .dataNascimento(LocalDate.of(1985, 6, 15))
-                .endereco(
-                        Endereco.builder()
-                                .rua("Rua do CPF")
-                                .numero("77")
-                                .cep("13000-200")
-                                .cidade("Campinas")
-                                .uf("SP")
-                                .build()
-                )
-                .build();
+        Endereco endereco = new Endereco(
+                "Rua do CPF",
+                "77",
+                "13000-200",
+                "Campinas",
+                "SP"
+        );
+
+        cliente = new Cliente(
+                1L,
+                "Cliente CPF",
+                "99988877766",
+                LocalDate.of(1985, 6, 15),
+                endereco
+        );
     }
 
     @Test
@@ -54,8 +54,8 @@ class BuscarClientePorCpfUseCaseTest {
         Optional<Cliente> resultado = buscarClientePorCpfUseCase.executar("99988877766");
 
         assertThat(resultado).isPresent();
-        assertThat(resultado.get().getCpf()).isEqualTo("99988877766");
-        assertThat(resultado.get().getNome()).isEqualTo("Cliente CPF");
+        assertThat(resultado.get().cpf()).isEqualTo("99988877766");
+        assertThat(resultado.get().nome()).isEqualTo("Cliente CPF");
 
         verify(clienteGateway).buscarPorCpf("99988877766");
     }

@@ -14,9 +14,9 @@ public class CriarClienteUseCase {
     private final ClienteGateway clienteGateway;
 
     public Cliente executar(Cliente cliente) {
-        log.info("Criando cliente com CPF {}", cliente.getCpf());
+        log.info("Criando cliente com CPF {}", cliente.cpf());
 
-        if (clienteGateway.buscarPorCpf(cliente.getCpf()).isPresent()) {
+        if (clienteGateway.buscarPorCpf(cliente.cpf()).isPresent()) {
             throw new IllegalArgumentException("Já existe um cliente com o CPF informado.");
         }
 

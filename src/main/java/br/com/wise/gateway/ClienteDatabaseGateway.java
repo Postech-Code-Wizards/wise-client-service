@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @ApplicationScoped
 @RequiredArgsConstructor
-public class ClienteGatewayImpl implements ClienteGateway {
+public class ClienteDatabaseGateway implements ClienteGateway {
 
     private final ClienteRepository clienteRepository;
     private final ClienteMapper clienteMapper;
@@ -51,7 +51,7 @@ public class ClienteGatewayImpl implements ClienteGateway {
 
     @Override
     public void deletar(Cliente cliente) {
-        clienteRepository.buscarPorId(cliente.getId())
+        clienteRepository.buscarPorId(cliente.id())
                 .ifPresent(clienteRepository::deletar);
     }
 }
