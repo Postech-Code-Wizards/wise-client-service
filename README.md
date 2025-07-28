@@ -1,85 +1,112 @@
-# client-service
+# 🧠 wise-client-service
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Microserviço responsável pelo gerenciamento de dados de clientes no ecossistema Wise.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+---
 
-## Running the application in dev mode
+## 📚 Índice
 
-You can run your application in dev mode that enables live coding using:
+- [📌 Visão Geral](#-visão-geral)
+- [🧱 Arquitetura](#-arquitetura)
+- [🔌 Tecnologias Utilizadas](#-tecnologias-utilizadas)
+- [🚀 Endpoints](#-endpoints)
+- [🧪 Testes e Cobertura](#-testes-e-cobertura)
+- [🐳 Como Executar](#-como-executar)
 
-```shell script
-./mvnw quarkus:dev
+---
+
+## 📌 Visão Geral
+
+O `wise-client-service` é responsável pelo **gerenciamento dos dados de clientes** no ecossistema de microsserviços do projeto **Wise**.
+
+Ele permite o cadastro, atualização, busca e exclusão de informações como **nome, CPF, data de nascimento e endereços**.
+
+> ⚠️ O sistema valida duplicidade de CPF e impede cadastros inválidos.
+
+---
+
+## 🧱 Arquitetura
+
+O serviço segue os princípios da **Arquitetura Limpa**, com separação clara entre camadas:
+
+- `domain.model` - Entidades e regras de negócio
+- `usecase` - Casos de uso
+- `gateway` - Comunicação com banco de dados (JPA + Panache)
+- `controller` - Endpoints REST
+- `mapper` - Conversão entre entidades e DTOs
+
+Há **isolamento completo entre as camadas**, garantindo baixo acoplamento:
+- Os **use cases** não conhecem os DTOs de request/response nem a camada web.
+- Os **controllers** não acessam diretamente as entidades do domínio, utilizando DTOs específicos.
+
+---
+
+## 🔌 Tecnologias Utilizadas
+
+- Java 21 + **Quarkus**
+- **PostgreSQL**
+- **Hibernate Panache**
+- **Flyway** para versionamento de banco
+- **JaCoCo** para cobertura de testes
+- **JUnit 5** + **Mockito**
+- **Docker** + Docker Compose
+
+---
+
+## 🚀 Endpoints
+
+Todos os endpoints são expostos via `/clientes`:
+
+| Método | Endpoint                 | Descrição                                   |
+|--------|--------------------------|---------------------------------------------|
+| GET    | `/clientes`              | Lista todos os clientes                     |
+| GET    | `/clientes/{id}`         | Busca cliente por ID                        |
+| GET    | `/clientes/cpf/{cpf}`    | Busca cliente por CPF                       |
+| POST   | `/clientes`              | Cria um novo cliente                        |
+| PUT    | `/clientes/{id}`         | Atualiza um cliente                         |
+| DELETE | `/clientes/{id}`         | Remove cliente por ID                       |
+
+---
+
+## 🧪 Testes e Cobertura
+
+O projeto utiliza **JUnit 5** + **Mockito** para testes unitários e cobertura via **JaCoCo**.
+
+> ⚠️ Como o serviço utiliza Quarkus, é necessário o seguinte comando para gerar o relatório:
+
+```bash
+./mvnw clean test jacoco:report
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+📂 O relatório estará disponível em:
 
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./mvnw package
+```
+target/jacoco-report/index.html
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+---
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+## 🐳 Como Executar
 
-If you want to build an _über-jar_, execute the following command:
+### ✅ Localmente com Quarkus
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```bash
+./mvnw clean quarkus:dev
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
+A aplicação será iniciada em:
+```
+http://localhost:8080
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+### ✅ Com Docker
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+Execute:
+
+```bash
+docker compose up --build
 ```
 
-You can then execute your native executable with: `./target/client-service-1.0.0-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code
-  for Hibernate ORM via the active record or the repository pattern
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus
-  REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate Validator ([guide](https://quarkus.io/guides/validation)): Validate object properties (field, getter) and
-  method parameters for your beans (REST, CDI, Jakarta Persistence)
-- Flyway ([guide](https://quarkus.io/guides/flyway)): Handle your database schema migrations
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes
-  with Swagger UI
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
-
-# wise-client-service
+> Este microserviço integra o projeto final da Fase 4 do Pós-Tech em Arquitetura de Software (FIAP), como parte de um sistema de gerenciamento de pedidos baseado em microsserviços.
