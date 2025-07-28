@@ -39,6 +39,12 @@
 
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jacoco</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm-panache</artifactId>
         </dependency>
         <dependency>
@@ -131,6 +137,7 @@
                 <version>0.8.10</version>
                 <executions>
                     <execution>
+                        <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
@@ -144,6 +151,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
